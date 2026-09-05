@@ -1,0 +1,7 @@
+[package]
+name = "orbit-server"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+orbit-proto = { workspace = true }

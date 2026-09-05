@@ -1,6 +1,17 @@
-[package]
-name = "orbirc"
+[workspace]
+resolver = "2"
+members = [
+    "proto",
+    "srv",
+    "client/core",
+    "client/gui",
+    "client/tui",
+]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
+[workspace.dependencies]
+orbit-proto = { path = "proto" }
+orbit-client = { path = "client/core" }

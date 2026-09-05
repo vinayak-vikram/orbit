@@ -1,0 +1,7 @@
+[package]
+name = "orbit-gui"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+orbit-client = { workspace = true }
