@@ -15,3 +15,5 @@ edition = "2024"
 [workspace.dependencies]
 orbit-proto = { path = "proto" }
 orbit-client = { path = "client/core" }
+minicbor = { version = "2.3.0", features = ["derive"] }
+heapless = { version = "0.9.3" }
