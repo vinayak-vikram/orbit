@@ -17,3 +17,6 @@ orbit-proto = { path = "proto" }
 orbit-client = { path = "client/core" }
 minicbor = { version = "2.3.0", features = ["derive"] }
 heapless = { version = "0.9.3" }
+coap = { version = "0.28" }
+coap-lite = { version = "0.13" }
+tokio = { version = "1", features = ["full"] }
