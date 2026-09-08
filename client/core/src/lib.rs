@@ -44,12 +44,20 @@ pub struct Line {
     pub ts: Option<u64>,
 }
 
+// need to differentiate betweenn dead srv and just quiet thign
+#[derive(Debug, Clone)]
+pub enum Event {
+    Line(Line),
+    Lost(String),
+}
+
 pub struct Client {
     url: String,
     nick: Nick,
     id: [u8; 4],
     seq: AtomicU64,
-    _sub: oneshot::Sender<ObserveMessage>,
+    sub: oneshot::Sender<ObserveMessage>,
+    ka: tokio::task::JoinHandle<()>,
 }
 
 impl Client {
@@ -57,7 +65,7 @@ impl Client {
         relay: &str,
         channel: &str,
         nick: &str,
-    ) -> Result<(Self, UnboundedReceiver<Line>), ClientError> {
+    ) -> Result<(Self, UnboundedReceiver<Event>), ClientError> {
         let ch = Channel::new(channel)?;
         let nick = Nick::new(nick)?;
         let path = channel_path(&ch);
@@ -79,18 +87,24 @@ impl Client {
         let (tx, rx) = mpsc::unbounded_channel();
         let sub = sock
             .observe(path.as_str(), move |m| {
-                let Ok(m) = m else { return };
+                let m = match m {
+                    Ok(m) => m,
+                    Err(e) => {
+                        let _ = tx.send(Event::Lost(e.to_string()));
+                        return;
+                    }
+                };
                 let Ok(env) = decode(&m.payload) else { return };
                 if let Body::Plain(msg) = env.body {
-                    let _ = tx.send(Line {
+                    let _ = tx.send(Event::Line(Line {
                         nick: msg.nick.into(),
                         text: msg.text.into(),
                         ts: msg.ts,
-                    });
+                    }));
                 }
             })
             .await?;
-        tokio::spawn(keepalive(sock));
+        let ka = tokio::spawn(keepalive(sock));
 
         Ok((
             Self {
@@ -98,7 +112,8 @@ impl Client {
                 nick,
                 id,
                 seq,
-                _sub: sub,
+                sub,
+                ka,
             },
             rx,
         ))
@@ -111,6 +126,11 @@ impl Client {
 
     pub fn nick(&self) -> &str {
         self.nick.as_str()
+    }
+
+    pub fn leave(self) {
+        let _ = self.sub.send(ObserveMessage::Terminate);
+        self.ka.abort();
     }
 }
 
