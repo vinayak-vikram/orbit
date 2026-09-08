@@ -5,3 +5,8 @@ edition.workspace = true
 
 [dependencies]
 orbit-client = { workspace = true }
+orbit-proto = { workspace = true }
+tokio = { workspace = true }
+ratatui = { workspace = true }
+crossterm = { workspace = true }
+futures = { workspace = true }

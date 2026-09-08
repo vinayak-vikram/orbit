@@ -10,7 +10,7 @@ use orbit_proto::types::Body;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = std::env::args()
         .nth(1)
-        .unwrap_or_else(|| format!("0.0.0.0:{COAP_PORT}"));
+        .unwrap_or_else(|| format!("127.0.0.1:{COAP_PORT}"));
     println!("server running on {addr}");
 
     Server::new_udp(&addr)?
